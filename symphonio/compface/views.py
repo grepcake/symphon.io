@@ -8,8 +8,7 @@ from .recognize import recognize_image
 
 
 def index(request):
-    photo_form = PhotoForm()
-    return render(request, 'index.html', {'form': photo_form})
+    return render(request, 'index.html')
 
 
 def recognize(request: HttpRequest):

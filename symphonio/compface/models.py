@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class Composer(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     creation_time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
@@ -15,7 +15,7 @@ class Concert(models.Model):
     creation_time = models.DateTimeField(default=timezone.now)
     start_time = models.DateTimeField('start of the concert')
     place = models.CharField(max_length=255)
-    description = models.TextField()
+    url = models.URLField('link to the philarmony site')
 
     def __str__(self):
         return 'Concert: of %s at %s, as described: %s' % (

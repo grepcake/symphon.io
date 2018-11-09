@@ -1,38 +1,27 @@
 import requests
 from bs4 import BeautifulSoup
 import datetime
-
-
-class Concert():
-    def __init__(self, time, place, url, composer):
-        self.time = time
-        self.place = place
-        self.url = url
-        self.composer = composer
-
-
-def f(r):
-    for i in parse():
-        print(i.time, i.composer, i.place, i.url, sep='\n')
+from compface.models import Concert, Composer
 
 
 def get_html():
     try:
         return requests.get('https://www.meloman.ru/calendar/')
     except:
-        print("Error while getting data form the Internet")
+        print("Error while getting data from the Internet")
 
 
 def parse_concert(url):
     concertr = requests.get('https://www.meloman.ru' + url)
-    return BeautifulSoup(concertr.text, features='html.parser').find_all('h5', {'class': 'caps'})
+    return BeautifulSoup(
+        concertr.text, features='html.parser').find_all(
+            'h5', {'class': 'caps'})
 
 
 def parse():
-    res = []
-    month = BeautifulSoup(get_html().text, features='html.parser').findAll('div',
-                                                                           {'class': 'calendar-day'})
-    res = []
+    month = BeautifulSoup(
+        get_html().text, features='html.parser').findAll(
+            'div', {'class': 'calendar-day'})
     for day in month:
         concerts = day.find_all('li', {'class': 'hall-entry'})
         dayo = int(day.find('p', {'class': 'day'}).text)
@@ -72,6 +61,17 @@ def parse():
                 if comp.parent.find('h6', {'class': 'gray'}) is not None:
                     composer = comp.find('a')
                     if composer is not None:
-                        res.append(Concert(datetime.datetime(2018, month, dayo, hour, minute), place, url,
-                                           "".join(composer.text.strip().split())))
-    return res
+                        composer_name = "".join(composer.text.strip().split())
+                        result_set = Composer.objects.filter(
+                            name=composer_name)
+                        if len(result_set != 1):
+                            continue
+                        composer_id = result_set[0].id
+                        start_time = datetime.datetime(2018, month, dayo, hour,
+                                                       minute)
+                        concert = Concert(
+                            composer=composer_id,
+                            start_time=start_time,
+                            place=place,
+                            url=url)
+                        concert.save()
